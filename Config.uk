@@ -1,0 +1,14 @@
+config LIBKEYUTILS
+	bool "keyutils - Linux Key Management Utilities"
+	default n
+	select LIBPOSIX_LIBDL
+	select LIBSYSCALL_SHIM
+	select LIBNEWLIBC
+	# it needs `key services`
+	select KEYS
+
+if LIBKEYUTILS
+config LIBKEYUTILS_KEYCTL
+	bool "keyctl program from keyutils"
+	default n
+endif
