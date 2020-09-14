@@ -1,0 +1,97 @@
+#  SPDX-License-Identifier: BSD-3-Clause
+#
+#  keyutils Makefile.uk
+#
+#  Authors: Laurentiu Barbulescu <lrbarbulescu@gmail.com>
+#
+#  Copyright (c) 2020, University Politehnica of Bucharest. All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#  3. Neither the name of the copyright holder nor the names of its
+#     contributors may be used to endorse or promote products derived from
+#     this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+#
+#  THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
+#
+
+################################################################################
+# Library registration
+################################################################################
+$(eval $(call addlib_s,libkeyutils,$(CONFIG_LIBKEYUTILS)))
+
+################################################################################
+# Original sources
+################################################################################
+LIBKEYUTILS_VERSION=1.6
+LIBKEYUTILS_URL=https://people.redhat.com/~dhowells/keyutils/keyutils-$(LIBKEYUTILS_VERSION).tar.bz2
+LIBKEYUTILS_SUBDIR=keyutils-$(LIBKEYUTILS_VERSION)
+$(eval $(call fetch,libkeyutils,$(LIBKEYUTILS_URL)))
+
+# LIBKEYUTILS_PATCHDIR=$(LIBKEYUTILS_BASE)/patches
+# $(eval $(call patch,libkeyutils,$(LIBKEYUTILS_PATCHDIR),$(LIBKEYUTILS_SUBDIR)))
+
+################################################################################
+# Helpers
+################################################################################
+LIBKEYUTILS_EXTRACTED = $(LIBKEYUTILS_ORIGIN)/keyutils-$(LIBKEYUTILS_VERSION)
+
+################################################################################
+# Library includes
+################################################################################
+LIBKEYUTILS_COMMON_INCLUDES-y     += -I$(LIBKEYUTILS_BASE)/include
+LIBKEYUTILS_COMMON_INCLUDES-y     += -I$(LIBKEYUTILS_EXTRACTED)
+CINCLUDES-$(CONFIG_LIBKEYUTILS)   += $(LIBKEYUTILS_COMMON_INCLUDES-y)
+CXXINCLUDES-$(CONFIG_LIBKEYUTILS) += $(LIBKEYUTILS_COMMON_INCLUDES-y)
+
+LIBKEYUTILS_CINCLUDES   += -I$(LIBKEYUTILS_EXTRACTED)
+LIBKEYUTILS_CXXINCLUDES += -I$(LIBKEYUTILS_EXTRACTED)
+
+################################################################################
+# Global flags
+################################################################################
+# Suppress flags
+LIBKEYUTILS_SUPPRESS_FLAGS += -Wno-sign-compare
+LIBKEYUTILS_CFLAGS-y   += $(LIBKEYUTILS_SUPPRESS_FLAGS)
+LIBKEYUTILS_CXXFLAGS-y += $(LIBKEYUTILS_SUPPRESS_FLAGS)
+
+# Preprocessing symbols
+LIBKEYUTILS_DEFINES    += -DPKGBUILD="\"$(shell date -u +%F)\"" \
+                          -DPKGVERSION="\"keyutils-$(LIBKEYUTILS_VERSION)\""
+LIBKEYUTILS_CFLAGS-y   += $(LIBKEYUTILS_DEFINES)
+LIBKEYUTILS_CXXFLAGS-y += $(LIBKEYUTILS_DEFINES)
+
+################################################################################
+# LIBKEYUTILS_KEYCTL suppress flags
+################################################################################
+LIBKEYUTILS_KEYCTL_SUPPRESS_FLAGS += -Wno-unused-parameter -Wno-type-limits -Wno-format
+LIBKEYUTILS_KEYCTL_FLAGS-$(CONFIG_LIBKEYUTILS_KEYCTL) += $(LIBKEYUTILS_KEYCTL_SUPPRESS_FLAGS)
+
+################################################################################
+# KEYUTILS code
+################################################################################
+LIBKEYUTILS_SRCS-y += $(LIBKEYUTILS_EXTRACTED)/keyutils.c
+
+################################################################################
+# LIBKEYUTILS_KEYCTL code
+################################################################################
+LIBKEYUTILS_SRCS-$(CONFIG_LIBKEYUTILS_KEYCTL) += $(LIBKEYUTILS_EXTRACTED)/keyctl.c
